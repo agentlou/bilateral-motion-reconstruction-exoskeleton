@@ -1,0 +1,94 @@
+clear; clc;
+
+%% === Load GMR and Symmetry Trajectories ===
+load('learnedHipTrajectory.mat', 'hipTrajectory');
+load('learnedKneeTrajectory.mat', 'kneeTrajectory');
+load('symmetricHipResults.mat', 'theta_right_hip_ideal', 'theta_right_hip_nonideal');
+load('symmetricKneeFromGMR.mat', 'theta_right_knee_ideal', 'theta_right_knee_nonideal');
+load('optimized_pid_full_leg.mat', 'optimalParams', 'time', 'timeStep');
+load('robot_setup.mat', 'jointUpperLimits', 'jointLowerLimits');
+
+% === (Optional) Convert to radians if needed ===
+if max(abs(hipTrajectory)) > 10
+    hipTrajectory = deg2rad(hipTrajectory);
+    kneeTrajectory = deg2rad(kneeTrajectory);
+    theta_right_hip_ideal = deg2rad(theta_right_hip_ideal);
+    theta_right_knee_ideal = deg2rad(theta_right_knee_ideal);
+    theta_right_hip_nonideal = deg2rad(theta_right_hip_nonideal);
+    theta_right_knee_nonideal = deg2rad(theta_right_knee_nonideal);
+    disp('✅ Converted all trajectories from degrees to radians.');
+end
+
+%% === Shared Setup ===
+springStiffness = 50;
+jointInertias = [0.02, 0.01, 0.02, 0.01];
+nJoints = 4;
+nSteps = length(time);
+
+% Extract PID gains
+Kp = reshape(optimalParams(1:4,1), 1, []);
+Ki = reshape(optimalParams(1:4,2), 1, []);
+Kd = reshape(optimalParams(1:4,3), 1, []);
+
+jointNames = {'L Hip','L Knee','R Hip','R Knee'};
+
+%% === Prepare Desired Trajectories ===
+desiredIdeal = [hipTrajectory(:), kneeTrajectory(:), ...
+                theta_right_hip_ideal(:), theta_right_knee_ideal(:)];
+
+desiredNonIdeal = [hipTrajectory(:), kneeTrajectory(:), ...
+                   theta_right_hip_nonideal(:), theta_right_knee_nonideal(:)];
+
+%% === Simulate With Spring ===
+actualIdeal = simulateWithSpring(desiredIdeal, Kp, Ki, Kd, ...
+    jointInertias, jointUpperLimits, jointLowerLimits, springStiffness, timeStep);
+
+actualNonIdeal = simulateWithSpring(desiredNonIdeal, Kp, Ki, Kd, ...
+    jointInertias, jointUpperLimits, jointLowerLimits, springStiffness, timeStep);
+
+%% === Save Results ===
+save('actualTrajectoryWithSprings_ideal.mat', 'actualIdeal', 'time');
+save('actualTrajectoryWithSprings_nonideal.mat', 'actualNonIdeal', 'time');
+disp('✅ Both simulations completed and saved.');
+
+%% === RMS Comparison Table ===
+fprintf('\n📊 RMS Error Comparison (Spring + PID, in radians)\n');
+fprintf('%-20s | %-15s | %-15s\n', 'Joint', 'Ideal Symmetry', 'Non-Ideal Sym');
+fprintf(repmat('-', 1, 60)); fprintf('\n');
+
+for i = 1:nJoints
+    rmsIdeal = sqrt(mean((desiredIdeal(:,i) - actualIdeal(:,i)).^2));
+    rmsNonId = sqrt(mean((desiredNonIdeal(:,i) - actualNonIdeal(:,i)).^2));
+    fprintf('%-20s | %15.5f | %15.5f\n', jointNames{i}, rmsIdeal, rmsNonId);
+end
+
+%% === Simulation Function ===
+function actual = simulateWithSpring(desired, Kp, Ki, Kd, inertia, jointUpper, jointLower, kSpring, dt)
+    nSteps = size(desired,1);
+    nJoints = size(desired,2);
+    config = zeros(1, nJoints);
+    vel = zeros(1, nJoints);
+    integErr = zeros(1, nJoints);
+    prevErr = zeros(1, nJoints);
+    actual = zeros(nSteps, nJoints);
+
+    for t = 1:nSteps
+        des = reshape(desired(t,:), 1, []);
+        err = des - config;
+        deriv = (err - prevErr) / dt;
+        torquePID = Kp .* err + Ki .* integErr + Kd .* deriv;
+        torqueSpring = -kSpring * config;
+        totalTorque = torquePID + torqueSpring;
+
+        for j = 1:nJoints
+            acc = totalTorque(j) / inertia(j);
+            vel(j) = vel(j) + acc * dt;
+            config(j) = config(j) + vel(j) * dt;
+            config(j) = max(min(config(j), jointUpper(j)), jointLower(j));
+        end
+
+        actual(t,:) = config;
+        prevErr = err;
+        integErr = integErr + err * dt;
+    end
+end

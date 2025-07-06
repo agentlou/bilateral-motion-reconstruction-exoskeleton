@@ -1,0 +1,130 @@
+%% === Fuzzy PID Simulation (Final Fixed - 4 Joints) ===
+clear; clc;
+
+%% === Load Data ===
+load('learnedHipTrajectory.mat', 'hipTrajectory', 'hipTime');
+load('learnedKneeTrajectory.mat', 'kneeTrajectory', 'kneeTime');
+load('symmetricHipResults.mat', 'theta_right_hip_ideal');
+load('symmetricKneeFromGMR.mat', 'theta_right_knee_ideal');
+load('optimized_pid_full_leg.mat', 'time', 'timeStep');
+load('robot_setup.mat', 'jointUpperLimits', 'jointLowerLimits');
+fuzzyController = readfis('fuzzy.fis');
+
+%% === Interpolate to Common Time ===
+nSteps = length(time);
+commonTime = linspace(0, 1, nSteps);
+
+hipTrajectory          = interp1(linspace(0,1,length(hipTrajectory)), hipTrajectory, commonTime)';
+kneeTrajectory         = interp1(linspace(0,1,length(kneeTrajectory)), kneeTrajectory, commonTime)';
+theta_right_hip_ideal  = interp1(linspace(0,1,length(theta_right_hip_ideal)), theta_right_hip_ideal, commonTime)';
+theta_right_knee_ideal = interp1(linspace(0,1,length(theta_right_knee_ideal)), theta_right_knee_ideal, commonTime)';
+
+% Convert to radians if needed
+if max(abs(hipTrajectory)) > 10, hipTrajectory = deg2rad(hipTrajectory); end
+if max(abs(kneeTrajectory)) > 10, kneeTrajectory = deg2rad(kneeTrajectory); end
+if max(abs(theta_right_hip_ideal)) > 10, theta_right_hip_ideal = deg2rad(theta_right_hip_ideal); end
+if max(abs(theta_right_knee_ideal)) > 10, theta_right_knee_ideal = deg2rad(theta_right_knee_ideal); end
+
+% === Desired Trajectories: [L_Hip, L_Knee, R_Hip, R_Knee] ===
+desiredTrajectories = [hipTrajectory, kneeTrajectory, theta_right_hip_ideal, theta_right_knee_ideal];
+
+%% === Simulation Setup ===
+nJoints = 4;
+actualTrajectories = zeros(nSteps, nJoints);
+jointVelocities = zeros(1, nJoints);
+integralError = zeros(1, nJoints);
+previousError = zeros(1, nJoints);
+
+jointInertias = [0.015, 0.01, 0.015, 0.01];      % Hip/Knee inertia
+jointDamping  = [0.04, 0.03, 0.04, 0.03];        % Slightly higher damping
+
+% Base PID gains (per joint)
+baseKp = [12 10 12 9];
+baseKi = [2 2 2 2];
+baseKd = [1.5 1.2 1.5 1.0];
+
+maxControl = 20;      % Lower control torque limit
+maxIntegral = 1;      % Anti-windup
+
+%% === Fuzzy PID Simulation ===
+for t = 1:nSteps
+    for j = 1:nJoints
+        desired = desiredTrajectories(t, j);
+        actual  = actualTrajectories(t, j);
+        error = desired - actual;
+        deltaError = (t > 1) * (error - previousError(j));
+
+        % Clamp fuzzy input range
+        errClamp = max(min(error, 3), -3);
+        derrClamp = max(min(deltaError, 3), -3);
+
+        % Fuzzy output [dKp, dKi, dKd] in [-1, 1]
+        fuzzyOutput = evalfis(fuzzyController, [errClamp, derrClamp]);
+        fuzzyOutput = max(min(fuzzyOutput, [0.5 0.3 0.4]), [-0.5 -0.3 -0.4]);
+
+        % Apply gains
+        Kp = baseKp(j) + fuzzyOutput(1);
+        Ki = baseKi(j) + fuzzyOutput(2);
+        Kd = baseKd(j) + fuzzyOutput(3);
+
+        % PID control
+        integralError(j) = integralError(j) + error * timeStep;
+        integralError(j) = max(min(integralError(j), maxIntegral), -maxIntegral);
+        derivative = deltaError / timeStep;
+
+        u = Kp * error + Ki * integralError(j) + Kd * derivative;
+        u = max(min(u, maxControl), -maxControl);
+
+        % Add damping
+        dampingTorque = -jointDamping(j) * jointVelocities(j);
+        acc = (u + dampingTorque) / jointInertias(j);
+        jointVelocities(j) = jointVelocities(j) + acc * timeStep;
+
+        % Integrate
+        config = actual + jointVelocities(j) * timeStep;
+        config = max(min(config, jointUpperLimits(j)), jointLowerLimits(j));
+
+        if t < nSteps
+            actualTrajectories(t+1, j) = config;
+        end
+        previousError(j) = error;
+    end
+end
+
+%% === Save Output ===
+save('fuzzy_pid_output_4joints_final.mat', 'actualTrajectories', 'time', 'timeStep');
+disp('✅ Fuzzy PID simulation completed and saved (4 joints).');
+
+%% === Plot Results ===
+jointLabels = {'Left Hip', 'Left Knee', 'Right Hip', 'Right Knee'};
+figure('Units','inches','Position',[1,1,9,7], 'PaperPositionMode','auto');
+tiledlayout(2, 2, 'Padding', 'tight', 'TileSpacing', 'compact');
+colors = {[0 0.45 0.74], [0.85 0.33 0.1]};
+
+for j = 1:nJoints
+    desired = desiredTrajectories(:, j);
+    simulated = actualTrajectories(:, j);
+    rms_error = sqrt(mean((desired - simulated).^2));
+
+    nexttile;
+    hold on; box on;
+    plot(time, desired, '--', 'Color', colors{1}, 'LineWidth', 1.5, 'DisplayName', 'Desired');
+    plot(time, simulated, '-', 'Color', colors{2}, 'LineWidth', 1.5, ...
+         'DisplayName', sprintf('Fuzzy PID (RMS = %.3f)', rms_error));
+
+    title(jointLabels{j}, 'FontName', 'Times New Roman', 'FontSize', 14, 'FontWeight', 'bold');
+    xlabel('Time (s)', 'FontName', 'Times New Roman', 'FontSize', 12);
+    ylabel('Angle (rad)', 'FontName', 'Times New Roman', 'FontSize', 12);
+    legend('Location', 'northeast', 'FontSize', 10);
+    grid on;
+
+    ax = gca;
+    ax.FontName = 'Times New Roman';
+    ax.FontSize = 12;
+    ax.FontWeight = 'bold';
+    ax.LineWidth = 1.3;
+    ax.TickDir = 'out';
+end
+
+print(gcf, 'fig_fuzzy_pid_4joints_final.pdf', '-dpdf', '-bestfit');
+disp('✅ Plot saved: fig_fuzzy_pid_4joints_final.pdf');

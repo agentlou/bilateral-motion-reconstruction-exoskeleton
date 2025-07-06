@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Exoskeleton (1).STEP">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.052532281047494 -0.193073753287912 0.114602092612989"
+        rpy="0 0 0" />
+      <mass
+        value="0.823502223050028" />
+      <inertia
+        ixx="0.00238127557502139"
+        ixy="-4.96767409774172E-07"
+        ixz="-2.76117262462438E-07"
+        iyy="0.00301852958829339"
+        iyz="-0.000122349478212535"
+        izz="0.0021056278530332" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link1">
+    <inertial>
+      <origin
+        xyz="-0.000101658585292097 -0.128998000459369 -0.00810576828567736"
+        rpy="0 0 0" />
+      <mass
+        value="0.274286322473506" />
+      <inertia
+        ixx="0.000864948817071921"
+        ixy="2.20754606707127E-06"
+        ixz="5.60535098459371E-08"
+        iyy="0.000156810080960356"
+        iyz="5.13265806366607E-07"
+        izz="0.000984306304150326" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1"
+    type="revolute">
+    <origin
+      xyz="-0.13144 -0.20798 -0.1979"
+      rpy="1.5708 0.054965 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="link1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.87"
+      upper="1.57"
+      effort="100"
+      velocity="1.5" />
+  </joint>
+  <link
+    name="link1-1">
+    <inertial>
+      <origin
+        xyz="-0.000950616772285751 -0.169216890624874 0.00553126431836057"
+        rpy="0 0 0" />
+      <mass
+        value="0.595096847839178" />
+      <inertia
+        ixx="0.00105624142401385"
+        ixy="3.51219159200096E-06"
+        ixz="-5.89105927202825E-07"
+        iyy="0.000487797003802771"
+        iyz="-1.20271585746716E-05"
+        izz="0.00110865779147274" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link1-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link1-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1-1"
+    type="revolute">
+    <origin
+      xyz="-5E-05 -0.50938 -0.0015"
+      rpy="3.1416 0 3.1416" />
+    <parent
+      link="link1" />
+    <child
+      link="link1-1" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="0"
+      upper="2.09"
+      effort="100"
+      velocity="1.5" />
+  </joint>
+  <link
+    name="link1-1-1">
+    <inertial>
+      <origin
+        xyz="0.0142952685728795 0.00210506518297127 0.0133255508520786"
+        rpy="0 0 0" />
+      <mass
+        value="0.55392185279326" />
+      <inertia
+        ixx="0.00338656599642928"
+        ixy="-0.000158015397165354"
+        ixz="5.22440747847126E-07"
+        iyy="0.000435922565733831"
+        iyz="9.10084647973904E-06"
+        izz="0.00378970948061791" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link1-1-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link1-1-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1-1-1"
+    type="fixed">
+    <origin
+      xyz="0.043615 -0.52287 -0.06415"
+      rpy="1.6258 1.5708 0" />
+    <parent
+      link="link1-1" />
+    <child
+      link="link1-1-1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.87"
+      upper="1.57"
+      effort="100"
+      velocity="1.5" />
+  </joint>
+  <link
+    name="link2">
+    <inertial>
+      <origin
+        xyz="-0.000435229668612147 -0.125366111313987 0.00501905154086529"
+        rpy="0 0 0" />
+      <mass
+        value="0.206473389278125" />
+      <inertia
+        ixx="0.000669424155338344"
+        ixy="-6.66750077835284E-07"
+        ixz="5.58386361276652E-08"
+        iyy="0.000150536111393244"
+        iyz="-3.33531947846402E-06"
+        izz="0.000786006597041285" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2"
+    type="revolute">
+    <origin
+      xyz="0.236560902607651 -0.207975511987619 -0.197896692045494"
+      rpy="1.5707963267949 0.054964542009261 1.5707963267949" />
+    <parent
+      link="base_link" />
+    <child
+      link="link2" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.87"
+      upper="1.57"
+      effort="1"
+      velocity="0" />
+  </joint>
+  <link
+    name="link2-1">
+    <inertial>
+      <origin
+        xyz="0.000750666561466939 -0.107059578898637 0.0167490978851629"
+        rpy="0 0 0" />
+      <mass
+        value="0.919165893918644" />
+      <inertia
+        ixx="0.00132500955901489"
+        ixy="-3.57161819388725E-06"
+        ixz="1.9183988161779E-06"
+        iyy="0.000791218900622894"
+        iyz="-1.32277628562988E-05"
+        izz="0.00129010612249001" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link2-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link2-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2-1"
+    type="revolute">
+    <origin
+      xyz="-5E-05 -0.50938 0.0015"
+      rpy="0 0 0" />
+    <parent
+      link="link2" />
+    <child
+      link="link2-1" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="0"
+      upper="2.09"
+      effort="100"
+      velocity="1.5" />
+  </joint>
+  <link
+    name="link2-1-1">
+    <inertial>
+      <origin
+        xyz="0.0142952686924872 0.00210506701289281 0.010674448678224"
+        rpy="0 0 0" />
+      <mass
+        value="0.55392183325648" />
+      <inertia
+        ixx="0.00338656598203427"
+        ixy="-0.000158015396831563"
+        ixz="-5.22440740508372E-07"
+        iyy="0.000435922542858481"
+        iyz="-9.1008456673613E-06"
+        izz="0.0037897094434925" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link2-1-1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Exoskeleton (1).STEP/meshes/link2-1-1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2-1-1"
+    type="fixed">
+    <origin
+      xyz="-0.042297 -0.54683 -0.06415"
+      rpy="1.6258 1.5708 0" />
+    <parent
+      link="link2-1" />
+    <child
+      link="link2-1-1" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
